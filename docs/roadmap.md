@@ -50,7 +50,7 @@ What each phase teaches, for someone coming from Go and C++.
 | Before 0 | C# syntax through the scaffold code: records, nullable reference types, `var`, lambdas, class vs struct. `dotnet build/test/run`. |
 | 0 | Reading code: ASP.NET MVC on .NET Framework (controllers, Razor views, Web.config, Global.asax), EF6, Autofac. |
 | 1 | .NET Framework vs .NET 10: EF6 → EF Core, Web.config → appsettings.json, Autofac → built-in DI, Newtonsoft → System.Text.Json, `Startup` → `Program.cs`. |
-| 2 | ASP.NET Core middleware pipeline, `async`/`await` and `Task` (compared with goroutines), streams, `HttpClient`, System.Text.Json, YARP, SQLite, AES-GCM. |
+| 2 | ASP.NET Core middleware pipeline, `async`/`await` and `Task` (compared with goroutines), streams, `HttpClient`, System.Text.Json, YARP, SQLite, AES-GCM Kerberos and Negotiate authentication, SPNs, Active Directory basics. |
 | 3 | Tree walking with `JsonNode`, AngleSharp DOM, LINQ, interfaces and generics, test-first development with xUnit. |
 | 4 | SQL Server backup/restore, Change Data Capture, `Microsoft.Data.SqlClient`, WireMock.Net. |
 | 5 | Razor templates, Playwright, CI pipelines, Docker. |
