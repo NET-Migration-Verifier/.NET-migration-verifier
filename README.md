@@ -1,6 +1,6 @@
 # .NET-migration-verifier
 
-Records how a legacy ASP.NET app responds to real requests, replays them against the migrated .NET 10 app, and reports every behavioral difference. See [the technical build plan](NET%20Migration%20Verification%20Technical%20Build%20Plan.md).
+Records how a legacy ASP.NET app responds to real requests, replays them against the migrated .NET 10 app, and reports every behavioral difference. See [the technical build plan](NET%20Migration%20Verification%20Technical%20Build%20Plan.md). Phases, dates and the requirements process are in [docs/roadmap.md](docs/roadmap.md).
 
 ## Layout
 
