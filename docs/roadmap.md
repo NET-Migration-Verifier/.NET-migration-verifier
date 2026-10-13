@@ -9,7 +9,9 @@ How the [technical build plan](../NET%20Migration%20Verification%20Technical%20B
 - **One milestone per phase.** A requirement's milestone is the phase that builds it.
 - **Status labels:** every issue starts as `status: draft`. In Phase 0 each one becomes `status: locked` (agreed) or `status: deferred` (not in v1). After lock, changing a requirement means opening a new issue that references the old one, so the history stays visible.
 
-Numbering: `R-0xx` applies to every phase, and `R-1xx` to `R-6xx` belong to Phases 1 to 6.
+Numbering: `R-0xx` applies to every phase, and `R-1xx` to `R-6xx` belong to Phases 1 to 6. Cross-cutting requirements carry the `cross-cutting` label; requirements about what the user sees and does also carry `ux`.
+
+Market and competitive context for these requirements is in [product-context.md](product-context.md).
 
 ## Phases
 
@@ -33,11 +35,11 @@ Goal: by Friday 23 Oct every issue in the repo is `status: locked` or `status: d
 
 | Day | Focus | Issues to review and lock |
 | --- | --- | --- |
-| Mon 19 Oct | The whole pipeline, and the rules that apply everywhere. Decide where the legacy app runs and start provisioning it. | D-01 (#2), R-001–R-004 (#9–#12) |
+| Mon 19 Oct | The whole pipeline, and the rules that apply everywhere. Provision the Windows machine (D-01 is decided), and settle the schedule question before anything else is locked. | D-09 (#54), D-11 (#56), R-001–R-004 (#9–#12), R-005–R-007 (#58–#60) |
 | Tue 20 Oct | The test bed. Read the legacy eShop source on GitHub: controllers, Web.config, EF6 models. List every route. | D-06 (#7), D-07 (#8), R-101–R-104 (#13–#16) |
-| Wed 21 Oct | Capture and replay. Trace one request through the proxy on paper. | D-02 (#3), D-03 (#4), R-201–R-208 (#17–#24) |
-| Thu 22 Oct | Normalize, diff, report: the core of the product. Diff two JSON responses by hand and write down which differences are noise. | D-04 (#5), D-05 (#6), R-301–R-306 (#25–#30) |
-| Fri 23 Oct | Database, evidence, shipping. Final pass: lock or defer everything. | R-401–R-604 (#31–#43) |
+| Wed 21 Oct | Capture and replay. Trace one request through the proxy on paper. | D-08 (#53), R-201–R-208 (#17–#24), R-210 (#47), R-211 (#61) |
+| Thu 22 Oct | Normalize, diff, report: the core of the product. Diff two JSON responses by hand and write down which differences are noise. | R-301–R-306 (#25–#30), R-308 (#62) |
+| Fri 23 Oct | Database, evidence, shipping. Final pass: lock or defer everything. | D-10 (#55), D-12 (#57), R-401–R-604 (#31–#43), R-506 (#63), R-507 (#64) |
 
 For each issue, ask three things: is every acceptance criterion testable, is anything missing, and does it belong in v1?
 
