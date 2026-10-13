@@ -59,7 +59,7 @@ Ship a built-in rule library of known Framework-to-.NET 10 differences. That lib
 
 ### 5. Diff and grouping
 
-Compare normalized outputs structurally (JSON tree, XML tree, HTML DOM, then plain text as a fallback). Give each difference a signature: endpoint pattern, path in the response, and type of change. Group identical signatures, so 4,000 raw mismatches become 12 root causes such as "`/api/orders/*` returns dates in a different format." An optional summary step can run each group through an LLM using the customer's own API key or a local model, never yours.
+Compare normalized outputs structurally (JSON tree, XML tree, HTML DOM, then plain text as a fallback). Give each difference a signature: endpoint pattern, path in the response, and type of change. Group identical signatures, so 4,000 raw mismatches become 12 root causes such as "`/api/orders/*` returns dates in a different format." An optional summary step can run each group through an LLM using the customer's own API key or a local model, never yours (deferred to v1.1).
 
 ### 6. Database side effects (from week 13)
 
