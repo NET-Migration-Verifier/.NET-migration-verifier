@@ -9,10 +9,10 @@ This replaces the 24-week sequential plan. The architecture in the build plan do
 | Phase | Dates | Working days | Produces |
 | --- | --- | --- | --- |
 | **Requirements** | Wed 14 - Tue 20 Oct 2026 | 5 | Every requirement locked or out, every decision closed, daily targets for the build written, infrastructure running |
-| **Development** | Wed 21 Oct - Tue 3 Nov 2026 | 10 | The product, built against the targets set in the requirements phase |
-| **System testing** | Wed 4 - Tue 10 Nov 2026 | 5 | The product used as a customer would use it, gaps found, gaps closed |
+| **Development** | Wed 21 Oct - Fri 6 Nov 2026 | 13 | The product, built against the targets set in the requirements phase |
+| **System testing** | Mon 9 - Fri 13 Nov 2026 | 5 | The product used as a customer would use it, gaps found, gaps closed |
 
-The system-testing week lands in the first week of November, not the last week of October. Three weeks of build starting today cannot end in October. To finish inside October the requirements phase has to shrink to two days, which is not enough to close twelve decisions. This is the first thing to settle on day 1.
+The month runs from today to **Sat 14 Nov 2026**, which is 23 working days. All 23 are allocated above and the last working day is Fri 13 Nov, so the deadline itself is the only margin. There is no spare week anywhere: a day lost is a day taken from the build.
 
 ## How a day runs
 
@@ -51,25 +51,25 @@ Five days. The output is not a document, it is a locked set of requirements and 
 
 | Day | Topic | Has to end with |
 | --- | --- | --- |
-| Wed 14 Oct | **Scope.** D-13: what the three-week product contains and what it does not. Nothing else can be decided until this is | The in/out list locked; everything out labelled `status: deferred` |
+| Wed 14 Oct | **Scope.** D-13: what this month's product contains and what it does not. Nothing else can be decided until this is | The in/out list locked; everything out labelled `status: deferred` |
 | Thu 15 Oct | **Capture and replay.** D-08 (who the user is), D-09 (config format), the recording format, what a session is | R-201 to R-208 locked or out |
 | Fri 16 Oct | **The core: normalize, diff, group.** What counts as noise, what a signature is, what the report has to show. This is where the product lives or dies | R-301 to R-306, R-308 locked or out |
 | Mon 19 Oct | **Test bed and the bug list.** D-06, D-07. What the ten planted bugs are, because they define what "working" means | R-101 to R-105 locked; the bug list written |
-| Tue 20 Oct | **Daily targets.** Turn the locked set into ten days of targets, one per development day, each with a check that says it is done | A target per day, agreed, on the board |
+| Tue 20 Oct | **Daily targets.** Turn the locked set into thirteen days of targets, one per development day, each with a check that says it is done | A target per day, agreed, on the board |
 
 Running in parallel from day 1, not after: infrastructure. See the list below.
 
-**Exit:** no `decision` issue open, every requirement `status: locked` or `status: deferred`, ten daily targets written, and the Windows machine serving the legacy app.
+**Exit:** no `decision` issue open, every requirement `status: locked` or `status: deferred`, thirteen daily targets written, and the Windows machine serving the legacy app.
 
-## Phase 2 - Development - Wed 21 Oct to Tue 3 Nov
+## Phase 2 - Development - Wed 21 Oct to Fri 6 Nov
 
-Ten working days, one target per day, set on 20 Oct. Standups continue daily and keep the same shape: the agenda is yesterday's carry-over, today's target, and anything the build turned up that needs a decision.
+Thirteen working days, one target per day, set on 20 Oct. Standups continue daily and keep the same shape: the agenda is yesterday's carry-over, today's target, and anything the build turned up that needs a decision.
 
 Unit tests are written as part of the work, not after it. Definition of done for a day's target: merged through a PR, `dotnet build` and `dotnet test` green with the output seen, and the acceptance criteria it serves ticked in the requirement issue or the gap named.
 
 **Exit:** the core loop runs end to end on the test bed and finds at least 9 of the 10 planted bugs with fewer than 5 false-alarm groups. That gate is unchanged from the original plan, because it is the only measure that says the product works rather than merely runs.
 
-## Phase 3 - System testing - Wed 4 to Tue 10 Nov
+## Phase 3 - System testing - Mon 9 to Fri 13 Nov
 
 Not unit testing, which already happened. This week the product is used the way a customer would use it, by us, as the customer: install it, point it at an app, capture, replay, read the report, decide whether the differences are real.
 
@@ -81,7 +81,7 @@ What comes out: a ranked gap list, and as many of those gaps closed as the week 
 
 ## What the CEO has to supply
 
-The build is blocked on infrastructure that has lead time and that no agent can provision. In a 24-week plan a week's slip here was an annoyance; in a three-week build it is the project.
+The build is blocked on infrastructure that has lead time and that no agent can provision. In a 24-week plan a week's slip here was an annoyance; in a thirteen-day build it is the project.
 
 | What | Why it blocks | When |
 | --- | --- | --- |
@@ -95,8 +95,8 @@ Everything else the CEO supplies is direction, in the standup, daily.
 
 ## Known risks
 
-1. **Ten development days against a scope estimated at twenty-four weeks.** D-13 is the mechanism for dealing with that. If the in/out list is not cut hard on day 1, the plan fails in week 3 instead of on day 1, which is the expensive way to find out.
+1. **Thirteen development days against a scope estimated at twenty-four weeks.** D-13 is the mechanism for dealing with that. If the in/out list is not cut hard on day 1, the plan fails in the last week instead of on day 1, which is the expensive way to find out.
 2. **The CEO is the bottleneck by design.** Everything flows through one person, which is what keeps the product coherent and also what caps throughput. The agenda has to be ready before the standup, or the standup becomes the research.
-3. **Infrastructure is unstarted.** As of 14 Oct none of the environment items are done and the legacy app has never run.
+3. **Infrastructure is unstarted.** As of 14 Oct none of the environment items are done and the legacy app has never run. Every day it stays unstarted comes out of the thirteen build days, not out of the requirements week.
 4. **The test bed is itself a build.** Getting Microsoft's eShop running on .NET Framework and porting it to .NET 10 is real work, and it is a prerequisite for everything else, because without two versions of an app there is nothing to compare.
-5. **Agents produce volume, not judgement.** The differ, the noise learning and the grouping are where false alarms come from, and the build plan's own advice is to keep them hand-reviewed. That review is CEO time, inside the same ten days.
+5. **Agents produce volume, not judgement.** The differ, the noise learning and the grouping are where false alarms come from, and the build plan's own advice is to keep them hand-reviewed. That review is CEO time, inside the same thirteen days.
