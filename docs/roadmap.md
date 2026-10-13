@@ -11,7 +11,7 @@ How the [technical build plan](../NET%20Migration%20Verification%20Technical%20B
 
 Numbering: `R-0xx` applies to every phase, and `R-1xx` to `R-6xx` belong to Phases 1 to 6. Cross-cutting requirements carry the `cross-cutting` label; requirements about what the user sees and does also carry `ux`.
 
-Market and competitive context for these requirements is in [product-context.md](product-context.md).
+Market and competitive context for these requirements is in [product-context.md](product-context.md). The week-by-week plan, the standup and review cadence and the definition of done are in [delivery-plan.md](delivery-plan.md); the scrum master agent operates it.
 
 ## Phases
 

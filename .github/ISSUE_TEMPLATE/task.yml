@@ -1,0 +1,39 @@
+name: Task
+description: A unit of work that serves a requirement. Owned by the scrum master.
+title: "T<phase>.<n>: "
+labels: ["task"]
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: Task
+      description: One imperative sentence, plus whatever context the person doing it needs.
+    validations:
+      required: true
+  - type: input
+    id: serves
+    attributes:
+      label: Serves
+      description: The requirement issues this task moves forward. A task with no requirement behind it is scope creep.
+      placeholder: "R-101 (#13), R-104 (#16)"
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Checkboxes. Concrete and checkable by someone else.
+      value: |
+        - [ ] 
+        - [ ] Merged through a PR, `dotnet build` and `dotnet test` pass
+        - [ ] The acceptance criteria it serves are ticked, or the gap is named
+    validations:
+      required: true
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate
+      description: In half-days. Anything over 4 half-days should be split.
+      placeholder: "2 half-days"
+    validations:
+      required: true

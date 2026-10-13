@@ -1,0 +1,28 @@
+name: Standup week
+description: One issue per week; the scrum master adds one comment per weekday.
+title: "Standup: week of "
+labels: ["standup"]
+body:
+  - type: input
+    id: phase
+    attributes:
+      label: Phase
+      placeholder: "Phase 1: Test bed, days 1-5 of 15"
+    validations:
+      required: true
+  - type: textarea
+    id: planned
+    attributes:
+      label: Planned this week
+      description: The tasks this week is supposed to finish. Friday's review compares against this list, so do not edit it mid-week.
+      value: |
+        - [ ] 
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Week goal
+      description: One sentence. What is true on Friday that was not true on Monday.
+    validations:
+      required: true

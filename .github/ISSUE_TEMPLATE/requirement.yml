@@ -1,0 +1,33 @@
+name: Requirement
+description: A product requirement with testable acceptance criteria. Owned by the product owner.
+title: "R-xxx: "
+labels: ["requirement", "status: draft"]
+body:
+  - type: textarea
+    id: requirement
+    attributes:
+      label: Requirement
+      description: What the product must do, in plain sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Checkboxes. Every one must be testable - a number, a command, an observable result. "Fast" and "user friendly" are not criteria.
+      value: |
+        - [ ] 
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source in build plan
+      placeholder: "Component 4: Rules"
+    validations:
+      required: true
+  - type: textarea
+    id: analysis
+    attributes:
+      label: Analysis and open questions
+      description: Why this is hard, what it conflicts with, what is still unknown.
