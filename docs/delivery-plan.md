@@ -63,7 +63,7 @@ The estimates on the board add up to 15.5 days against the 15 working days in th
 
 **Exit:** a recorded 20-minute session replays against both versions with no crashes.
 
-Carries the Kerberos week that D-03 added. Per D-11 (#56), HAR import moves to week 12 and parallel replay leaves the v1 scope to pay for it.
+Carries the Kerberos week that D-03 added, and these four weeks do not cover it. **D-11 (#56) is open.** It proposes moving HAR import to week 12 and dropping parallel replay from the v1 scope to pay for the week, and the week-12 row below is written as if that is what gets chosen. If D-11 is answered another way, this phase and every phase after it move, so it is the first thing to settle on Mon 19 Oct.
 
 ### Phase 3 · Normalize, diff, report · weeks 8-12
 
@@ -73,7 +73,7 @@ Carries the Kerberos week that D-03 added. Per D-11 (#56), HAR import moves to w
 | 9 | 21-27 Dec | Noise learned by replaying legacy against itself | R-302 (#26) |
 | 10 | 28 Dec - 3 Jan | Normalization rules from config; the first built-in rules | R-303 (#27), R-304 (#28) |
 | 11 | 4-10 Jan | Root-cause grouping and signatures; sampling for large recordings | R-305 (#29), R-308 (#62) |
-| 12 | 11-17 Jan | HTML evidence report; HAR import; the false alarm rate measured for the first time | R-306 (#30), R-207 (#23), R-004 (#12) |
+| 12 | 11-17 Jan | HTML evidence report; HAR import (only if D-11 lands as proposed; #23 is still on the Phase 2 milestone); the false alarm rate measured for the first time | R-306 (#30), R-207 (#23), R-004 (#12) |
 
 **Exit:** finds at least 9 of the 10 planted bugs with fewer than 5 false-alarm groups. **The first paid assessment can start.**
 
