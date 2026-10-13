@@ -1,65 +1,48 @@
 # Roadmap
 
-How the [technical build plan](../NET%20Migration%20Verification%20Technical%20Build%20Plan.md) turns into work: seven phases, each with requirements tracked on GitHub and an exit test that must pass before the next phase starts.
+How the [technical build plan](../NET%20Migration%20Verification%20Technical%20Build%20Plan.md) turns into work: what a requirement is, how a decision gets made, and who owns which kind of issue.
+
+The schedule lives in [delivery-plan.md](delivery-plan.md): four weeks, three phases, a daily standup that every decision flows through. Market and competitive context is in [product-context.md](product-context.md).
 
 ## How requirements work
 
 - **One GitHub issue per requirement** (`R-xxx`, label `requirement`) with a statement, acceptance criteria, its source in the build plan, and open questions.
 - **One GitHub issue per open decision** (`D-xx`, label `decision`) with options and a recommendation. A decision is closed with a comment stating what was chosen, and the affected requirements are then updated.
-- **One milestone per phase.** A requirement's milestone is the phase that builds it.
-- **Status labels:** every issue starts as `status: draft`. In Phase 0 each one becomes `status: locked` (agreed) or `status: deferred` (not in v1). After lock, changing a requirement means opening a new issue that references the old one, so the history stays visible.
+- **One GitHub issue per task** (`T<phase>.<n>`, label `task`) with the requirements it serves and an estimate.
+- **One issue per day** for the standup (label `standup`): agenda, decided, dispatched, landed.
+- **Status labels:** every requirement starts as `status: draft` and becomes `status: locked` (in this cycle) or `status: deferred` (next cycle) during the requirements week. After lock, changing a requirement means opening a new issue that references the old one, so the history stays visible.
 
-Numbering: `R-0xx` applies to every phase, and `R-1xx` to `R-6xx` belong to Phases 1 to 6. Cross-cutting requirements carry the `cross-cutting` label; requirements about what the user sees and does also carry `ux`.
+Numbering: `R-0xx` applies everywhere, `R-1xx` to `R-6xx` group by the area they belong to - test bed, capture and replay, normalize and diff, database, evidence and CI, packaging. Those groups no longer map to calendar phases; the calendar is in the delivery plan. Cross-cutting requirements carry the `cross-cutting` label, and requirements about what the user sees and does also carry `ux`.
 
-Market and competitive context for these requirements is in [product-context.md](product-context.md). The week-by-week plan, the standup and review cadence and the definition of done are in [delivery-plan.md](delivery-plan.md); the scrum master agent operates it.
+## Who owns what
+
+| Role | Owns | Never does |
+| --- | --- | --- |
+| CEO / CTO | Every decision. Locking and deferring requirements. Closing `decision` issues | - |
+| Product owner (`.claude/agents/product-owner.md`) | Writing and refining `R-xxx` and `D-xx`, checking them against the build plan and scope | Lock, defer, or close a decision |
+| UX specialist (`.claude/agents/ux-specialist.md`) | The users' side of a requirement: CLI, config, errors, report, install | Same |
+| Scrum master (`.claude/agents/scrum-master.md`) | `T-xxx` tasks, the standup record, the schedule, the exit gates | Write requirements or code |
 
 ## Phases
 
-| Phase | Weeks | Dates | Milestone | Exit test |
-| --- | --- | --- | --- | --- |
-| 0. Requirements | 0 | 19–25 Oct 2026 | [Phase 0](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/1) | Every requirement locked or deferred; no decision issue open; Windows environment ready |
-| 1. Test bed | 1–3 | 26 Oct – 15 Nov 2026 | [Phase 1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/2) | Both eShop versions run, and the planted-bug list is written |
-| 2. Capture and replay | 4–7 | 16 Nov – 13 Dec 2026 | [Phase 2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/3) | A recorded 20-minute session replays against both versions with no crashes |
-| 3. Normalize, diff, report | 8–12 | 14 Dec 2026 – 17 Jan 2027 | [Phase 3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/4) | Finds at least 9 of 10 planted bugs with fewer than 5 false alarms. **First paid assessment can start.** |
-| 4. Database side effects | 13–18 | 18 Jan – 28 Feb 2027 | [Phase 4](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/5) | Catches a planted bug that writes a wrong value while returning an identical page |
-| 5. Evidence and CI | 19–22 | 1 – 28 Mar 2027 | [Phase 5](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/6) | A design partner runs it in their own pipeline without help |
-| 6. Ship v1 | 23–24 | 29 Mar – 11 Apr 2027 | [Phase 6](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/7) | A second client installs and gets a first report in under 2 days |
-
-The days before 19 Oct are free reading time (see "Before Phase 0" below).
-
-## Phase 0: requirements week
-
-Tracking issue: [#44](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/44).
-
-Goal: by Friday 23 Oct every issue in the repo is `status: locked` or `status: deferred`, and every `decision` issue is closed.
-
-| Day | Focus | Issues to review and lock |
+| Phase | Dates | Exit |
 | --- | --- | --- |
-| Mon 19 Oct | The whole pipeline, and the rules that apply everywhere. Provision the Windows machine (D-01 is decided), and settle the schedule question before anything else is locked. | D-09 (#54), D-11 (#56), R-001–R-004 (#9–#12), R-005–R-007 (#58–#60) |
-| Tue 20 Oct | The test bed. Read the legacy eShop source on GitHub: controllers, Web.config, EF6 models. List every route. | D-06 (#7), D-07 (#8), R-101–R-104 (#13–#16) |
-| Wed 21 Oct | Capture and replay. Trace one request through the proxy on paper. | D-08 (#53), R-201–R-208 (#17–#24), R-210 (#47), R-211 (#61) |
-| Thu 22 Oct | Normalize, diff, report: the core of the product. Diff two JSON responses by hand and write down which differences are noise. | R-301–R-306 (#25–#30), R-308 (#62) |
-| Fri 23 Oct | Database, evidence, shipping. Final pass: lock or defer everything. | D-10 (#55), D-12 (#57), R-401–R-604 (#31–#43), R-506 (#63), R-507 (#64) |
+| Requirements | Wed 14 - Tue 20 Oct 2026 | No decision open, every requirement locked or deferred, ten daily targets written, the Windows machine serving the legacy app |
+| Development | Wed 21 Oct - Tue 3 Nov 2026 | The core loop finds at least 9 of the 10 planted bugs with fewer than 5 false-alarm groups |
+| System testing | Wed 4 - Tue 10 Nov 2026 | A full run from install to report with no step that needs someone who built it |
 
-For each issue, ask three things: is every acceptance criterion testable, is anything missing, and does it belong in v1?
+Day-by-day detail, the shape of a standup, and what the CEO has to supply are in [delivery-plan.md](delivery-plan.md).
 
 ## Learning track
 
-What each phase teaches, for someone coming from Go and C++.
+What each area teaches, for someone coming from Go and C++.
 
-| Phase | C# and .NET topics |
+| Area | C# and .NET topics |
 | --- | --- |
-| Before 0 | C# syntax through the scaffold code: records, nullable reference types, `var`, lambdas, class vs struct. `dotnet build/test/run`. |
-| 0 | Reading code: ASP.NET MVC on .NET Framework (controllers, Razor views, Web.config, Global.asax), EF6, Autofac. |
-| 1 | .NET Framework vs .NET 10: EF6 → EF Core, Web.config → appsettings.json, Autofac → built-in DI, Newtonsoft → System.Text.Json, `Startup` → `Program.cs`. |
-| 2 | ASP.NET Core middleware pipeline, `async`/`await` and `Task` (compared with goroutines), streams, `HttpClient`, System.Text.Json, YARP, SQLite, AES-GCM Kerberos and Negotiate authentication, SPNs, Active Directory basics. |
-| 3 | Tree walking with `JsonNode`, AngleSharp DOM, LINQ, interfaces and generics, test-first development with xUnit. |
-| 4 | SQL Server backup/restore, Change Data Capture, `Microsoft.Data.SqlClient`, WireMock.Net. |
-| 5 | Razor templates, Playwright, CI pipelines, Docker. |
-| 6 | Self-contained single-file publishing, Windows services, signing. |
+| Scaffold | C# syntax through the scaffold code: records, nullable reference types, `var`, lambdas, class vs struct. `dotnet build/test/run` |
+| Test bed | Reading ASP.NET MVC on .NET Framework (controllers, Razor views, Web.config, Global.asax), EF6, Autofac. Then the port: EF6 to EF Core, Web.config to appsettings.json, Autofac to built-in DI, Newtonsoft to System.Text.Json, `Startup` to `Program.cs` |
+| Capture and replay | ASP.NET Core middleware pipeline, `async`/`await` and `Task` (compared with goroutines), streams, `HttpClient`, System.Text.Json, YARP |
+| Normalize and diff | Tree walking with `JsonNode`, AngleSharp DOM, LINQ, interfaces and generics, test-first development with xUnit |
+| Report | Razor templates |
 
-## Before Phase 0 (13–18 Oct)
-
-- Read the build plan end to end.
-- Read the scaffold in `src/` and `tests/`, and run `dotnet build` and `dotnet test`.
-- Skim the open issues so Monday starts with questions, not first reads.
+Deferred areas keep their learning value for the next cycle: SQL Server backup/restore and Change Data Capture, WireMock.Net, Playwright, Docker, Kerberos and Negotiate authentication, self-contained single-file publishing and Windows services.
