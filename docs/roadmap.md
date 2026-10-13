@@ -17,19 +17,19 @@ Market and competitive context for these requirements is in [product-context.md]
 
 | Phase | Weeks | Dates | Milestone | Exit test |
 | --- | --- | --- | --- | --- |
-| 0. Requirements | 0 | 19–25 Oct 2026 | [Phase 0](https://github.com/Shridhar2104/.NET-migration-verifier/milestone/1) | Every requirement locked or deferred; no decision issue open; Windows environment ready |
-| 1. Test bed | 1–3 | 26 Oct – 15 Nov 2026 | [Phase 1](https://github.com/Shridhar2104/.NET-migration-verifier/milestone/2) | Both eShop versions run, and the planted-bug list is written |
-| 2. Capture and replay | 4–7 | 16 Nov – 13 Dec 2026 | [Phase 2](https://github.com/Shridhar2104/.NET-migration-verifier/milestone/3) | A recorded 20-minute session replays against both versions with no crashes |
-| 3. Normalize, diff, report | 8–12 | 14 Dec 2026 – 17 Jan 2027 | [Phase 3](https://github.com/Shridhar2104/.NET-migration-verifier/milestone/4) | Finds at least 9 of 10 planted bugs with fewer than 5 false alarms. **First paid assessment can start.** |
-| 4. Database side effects | 13–18 | 18 Jan – 28 Feb 2027 | [Phase 4](https://github.com/Shridhar2104/.NET-migration-verifier/milestone/5) | Catches a planted bug that writes a wrong value while returning an identical page |
-| 5. Evidence and CI | 19–22 | 1 – 28 Mar 2027 | [Phase 5](https://github.com/Shridhar2104/.NET-migration-verifier/milestone/6) | A design partner runs it in their own pipeline without help |
-| 6. Ship v1 | 23–24 | 29 Mar – 11 Apr 2027 | [Phase 6](https://github.com/Shridhar2104/.NET-migration-verifier/milestone/7) | A second client installs and gets a first report in under 2 days |
+| 0. Requirements | 0 | 19–25 Oct 2026 | [Phase 0](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/1) | Every requirement locked or deferred; no decision issue open; Windows environment ready |
+| 1. Test bed | 1–3 | 26 Oct – 15 Nov 2026 | [Phase 1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/2) | Both eShop versions run, and the planted-bug list is written |
+| 2. Capture and replay | 4–7 | 16 Nov – 13 Dec 2026 | [Phase 2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/3) | A recorded 20-minute session replays against both versions with no crashes |
+| 3. Normalize, diff, report | 8–12 | 14 Dec 2026 – 17 Jan 2027 | [Phase 3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/4) | Finds at least 9 of 10 planted bugs with fewer than 5 false alarms. **First paid assessment can start.** |
+| 4. Database side effects | 13–18 | 18 Jan – 28 Feb 2027 | [Phase 4](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/5) | Catches a planted bug that writes a wrong value while returning an identical page |
+| 5. Evidence and CI | 19–22 | 1 – 28 Mar 2027 | [Phase 5](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/6) | A design partner runs it in their own pipeline without help |
+| 6. Ship v1 | 23–24 | 29 Mar – 11 Apr 2027 | [Phase 6](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/milestone/7) | A second client installs and gets a first report in under 2 days |
 
 The days before 19 Oct are free reading time (see "Before Phase 0" below).
 
 ## Phase 0: requirements week
 
-Tracking issue: [#44](https://github.com/Shridhar2104/.NET-migration-verifier/issues/44).
+Tracking issue: [#44](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/44).
 
 Goal: by Friday 23 Oct every issue in the repo is `status: locked` or `status: deferred`, and every `decision` issue is closed.
 
