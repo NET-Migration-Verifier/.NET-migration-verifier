@@ -15,9 +15,15 @@ This replaces the 24-week sequential plan. The architecture in the build plan do
 | **System testing** | Sat 14 - Fri 20 Nov | 7 | The product used as a customer would use it, gaps found, gaps closed |
 | **Margin** | Sat 21 - Tue 24 Nov | 4 | The only slack in the cycle |
 
-**The ten days added on 14 Oct pay for Kerberos; they are not slack.** Windows authentication costs roughly nine days: the domain controller and test accounts, both apps behind Windows auth with SPNs registered, the mechanism that tells capture which user made a request (D-08), the replayer obtaining fresh tickets per mapped test account, and one planted bug that depends on identity. The build went from 14 days to 24 and the scope went up by one requirement area, so the net gain is about a day.
+**Full scope.** All 47 requirements are in this cycle. Nothing is deferred, including the two that earlier decisions had pushed out: R-209 (#46) Postman and test-suite import, and R-307 (#49) the LLM summary of difference groups.
 
-The four margin days stay margin. If they start being spent in the first week, that is the signal the scope was wrong, and it goes on the agenda the day it happens.
+**The rate this implies, stated plainly so it can be checked.** The original plan budgeted 24 weeks of solo work - about 120 working days - for this scope. It now has 24 development days. Every day has to produce what that plan budgeted five days for, and roughly two requirements have to land per day.
+
+That is the target the plan is built on, and it is deliberately aggressive. What makes it conceivable is that agents work in parallel on separate requirements while the CEO decides; what caps it is that the differ, the noise learning and the grouping need hand review, and that review does not parallelise.
+
+**The tripwire.** After day 3 (Fri 23 Oct), compare requirements actually closed against the nine the map below expects by then. That ratio is the real rate. If it is under half, the choice comes to the standup that morning: cut scope, extend the cycle, or accept a lower bar at the exit gate. Finding out on day 3 costs three days; finding out on day 20 costs the cycle.
+
+The four margin days stay margin. If they start being spent in the first week, that is the same signal.
 
 ## How a day runs
 
@@ -54,7 +60,7 @@ Seven days. The output is not a document, it is a locked set of requirements and
 
 | Day | Topic | Has to end with |
 | --- | --- | --- |
-| Wed 14 Oct | **Scope.** D-13: what this cycle's product contains and what it does not | The in/out list locked; everything out labelled `status: deferred` |
+| Wed 14 Oct | **Scope.** D-13: decided - everything is in, all 47 requirements, nothing deferred | The rate that implies written down, and the day-3 tripwire agreed |
 | Thu 15 Oct | **Test bed, Windows auth and the bug list.** D-06, D-07. Taken early because the test bed is the long pole: two versions of a real app, both behind Kerberos, have to exist before the product has anything to compare | R-101 to R-105 locked; the ten planted bugs defined, one of them identity-dependent; the eShop fork and the domain controller both started the same day |
 | Fri 16 Oct | **Capture and replay.** D-08 (how capture learns which user made a request), D-09 (config format), the recording format, what a session is, how tokens get rewritten | R-201 to R-208 and R-210 locked or out |
 | Sat 17 Oct | **The core: normalize, diff, group.** What counts as noise, what a signature is. This is where the product lives or dies, and where false alarms come from | R-301 to R-305 locked or out |
@@ -68,11 +74,44 @@ Running in parallel from day 1, not after: infrastructure. See the list below.
 
 ## Phase 2 - Development - Wed 21 Oct to Fri 13 Nov
 
-Twenty-four days, one target per day, set on 20 Oct. Standups continue daily and keep the same shape: the agenda is yesterday's carry-over, today's target, and anything the build turned up that needs a decision.
+Twenty-four days, one target per day. The map below is the plan; the target issues get written on Tue 20 Oct once the requirements are locked, because writing them before that just means rewriting them.
+
+Standups continue daily and keep the same shape: the agenda is yesterday's carry-over, today's target, and anything the build turned up that needs a decision.
+
+| Day | Date | Target | Requirements |
+| --- | --- | --- | --- |
+| 1 | Wed 21 Oct | Legacy eShop MVC serving pages on full IIS against SQL Server with seeded data | R-101 (#13) |
+| 2 | Thu 22 Oct | The .NET 10 port, agent-driven: EF6 to EF Core, Web.config to appsettings, Autofac to built-in DI, Newtonsoft to System.Text.Json | R-102 (#14) |
+| 3 | Fri 23 Oct | Port finished and route-compared against the legacy list; setup and reset scripts | R-102 (#14), R-104 (#16) |
+| 4 | Sat 24 Oct | Both apps behind Kerberos on real DNS names with SPNs; `klist` shows a ticket, not NTLM | R-105 (#48) |
+| 5 | Sun 25 Oct | Ten planted bugs committed one per commit, plus the sealed set, plus the written bug list | R-103 (#15) |
+| 6 | Mon 26 Oct | YARP capture proxy streaming bodies to disk; the recording folder and manifest | R-201 (#17), R-203 (#19) |
+| 7 | Tue 27 Oct | Redaction at capture time; encryption at rest with a customer-held key | R-202 (#18), R-205 (#21) |
+| 8 | Wed 28 Oct | SQLite index over a recording; unrecordable traffic detected and counted | R-204 (#20), R-211 (#61) |
+| 9 | Thu 29 Oct | HAR import and Postman collection import, both redacted on the way in | R-207 (#23), R-209 (#46) |
+| 10 | Fri 30 Oct | Session, cookie and anti-forgery token rewriting. The riskiest single day in the build | R-206 (#22) |
+| 11 | Sat 31 Oct | Sequential replay against legacy A, legacy B and the migrated app | R-208 (#24) |
+| 12 | Sun 1 Nov | Kerberos replay: recorded users mapped to test accounts, fresh tickets per account | R-210 (#47) |
+| 13 | Mon 2 Nov | Structural differ: JSON, XML, HTML DOM, text fallback, status and headers | R-301 (#25) |
+| 14 | Tue 3 Nov | Noise learned by replaying the legacy app against itself | R-302 (#26) |
+| 15 | Wed 4 Nov | Normalization rules from config, and the built-in rule library seeded from the port's own differences | R-303 (#27), R-304 (#28) |
+| 16 | Thu 5 Nov | Root-cause grouping and signatures; sampling for large recordings | R-305 (#29), R-308 (#62) |
+| 17 | Fri 6 Nov | HTML evidence report, and the false alarm rate measured for the first time | R-306 (#30), R-004 (#12) |
+| 18 | Sat 7 Nov | Database snapshot restore per run; change feed enabled and rows attributed per request | R-401 (#31), R-402 (#32) |
+| 19 | Sun 8 Nov | Row-level diff between runs; outbound calls to WireMock.Net with egress blocked | R-403 (#33), R-404 (#34) |
+| 20 | Mon 9 Nov | Date shifting from capture time to replay time; optional LLM summary of groups | R-405 (#50), R-307 (#49) |
+| 21 | Tue 10 Nov | PDF report; accept list with reasons and reviewer verdicts | R-501 (#35), R-503 (#37) |
+| 22 | Wed 11 Nov | CI gate with exit codes and JUnit; Docker image; AltCover coverage under IIS | R-502 (#36), R-505 (#39), R-504 (#38) |
+| 23 | Thu 12 Nov | Preflight `doctor` and support bundle; MCP server; self-contained executables | R-506 (#63), R-507 (#64), R-601 (#40) |
+| 24 | Fri 13 Nov | Windows service installer; offline licence; docs, security pack, versioned release | R-602 (#41), R-603 (#42), R-604 (#43) |
+
+Running across every day, not scheduled on one: R-001 (#9) no egress, R-002 (#10) the config file, R-003 (#11) traceability, R-005 (#58) the CLI surface, R-006 (#59) recording retention and deletion, R-007 (#60) the production opt-in.
+
+**Where this map is thinnest:** days 22 to 24. AltCover under IIS is the one item the build plan itself calls a spike, and it sits on the same day as Docker and the CI gate; installers, licensing and signing sit on the last day with nothing behind them. If anything slips, it lands here, and this is the first place the margin gets spent.
 
 Unit tests are written as part of the work, not after it. Definition of done for a day's target: merged through a PR, `dotnet build` and `dotnet test` green with the output seen, and the acceptance criteria it serves ticked in the requirement issue or the gap named.
 
-**Exit:** the core loop runs end to end on the test bed, including a Kerberos session replayed as mapped test accounts, and finds at least 9 of the 10 planted bugs with fewer than 5 false-alarm groups. That gate is unchanged from the original plan, because it is the only measure that says the product works rather than merely runs.
+**Exit:** the core loop runs end to end on the test bed, including a Kerberos session replayed as mapped test accounts and a database side-effect check, and finds at least 9 of the 10 planted bugs with fewer than 5 false-alarm groups.
 
 ## Phase 3 - System testing - Sat 14 to Fri 20 Nov
 
@@ -100,7 +139,7 @@ Everything else the CEO supplies is direction, in the standup, daily.
 
 ## Known risks
 
-1. **Twenty-four build days against a scope estimated at twenty-four weeks.** D-13 is the mechanism for dealing with that. If the in/out list is not cut hard on day 1, the plan fails in November instead of on day 1, which is the expensive way to find out.
+1. **Twenty-four build days against a scope estimated at a hundred and twenty.** Scope was not cut, so the whole plan rests on sustaining roughly five times a traditional day's output. The day-3 tripwire exists to find out whether that is real while there is still time to act on the answer.
 2. **Kerberos is the largest single thing in scope and it is mostly infrastructure.** It cannot be built by an agent working alone, it cannot be tested without a domain, and its hardest part - learning which user made a recorded request, because the ticket is encrypted for the app's service account - is still an open decision (D-08, #53). If Hyper-V turns out to be unavailable, Kerberos is gone and the ten added days should go back.
 3. **The CEO is the bottleneck by design.** Everything flows through one person, which is what keeps the product coherent and also what caps throughput. The agenda has to be ready before the standup, or the standup becomes the research.
 4. **Forty-two days with no day off, and the quality bottleneck is judgement.** The differ, the noise learning and the grouping are the parts the build plan says to keep hand-reviewed, and review is the first thing fatigue degrades. The four margin days exist partly for this.
