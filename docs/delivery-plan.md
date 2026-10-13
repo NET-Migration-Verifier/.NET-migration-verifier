@@ -44,11 +44,13 @@ Dates are Monday to Sunday. "Exit" rows are gates: the phase does not end until 
 
 | Week | Dates | Goal | Requirements |
 | --- | --- | --- | --- |
-| 1 | 26 Oct - 1 Nov | Legacy eShop MVC running on full IIS with SQL Server and seeded data; every route written down | R-101 (#13) |
+| 1 | 26 Oct - 1 Nov | Legacy eShop MVC running on full IIS with SQL Server and seeded data; every route written down; the AD domain controller built | R-101 (#13), R-105 (#48) |
 | 2 | 2-8 Nov | The .NET 10 port, built with an AI coding agent, serving the same routes against the same schema | R-102 (#14) |
-| 3 | 9-15 Nov | Windows-authentication variant in the AD domain; 10 planted bugs plus the sealed set; one-command setup and reset scripts | R-103 (#15), R-104 (#16), R-105 (#48) |
+| 3 | 9-15 Nov | Kerberos on both apps; 10 planted bugs plus the sealed set; one-command setup and reset scripts | R-103 (#15), R-104 (#16), R-105 (#48) |
 
 **Exit:** both versions run locally including the Kerberos variant, and the planted-bug list is written.
+
+The estimates on the board add up to 15.5 days against the 15 working days in this phase, and the load is uneven: week 1 is exactly full, week 2 has half a day spare, **week 3 is a day over**. The domain controller (T1.8, #72) is already pulled into week 1 because it has lead time and depends on nothing. The day that is still over has to come from somewhere: the candidate is T1.11 (#75), the sealed bug set, which is blocked on D-06 (#7), is mostly agent work, and can slip into the first days of Phase 2 without touching the Phase 1 exit test.
 
 ### Phase 2 · Capture and replay · weeks 4-7
 
