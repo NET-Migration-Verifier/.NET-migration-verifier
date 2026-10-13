@@ -1,0 +1,36 @@
+name: Decision
+description: An open question the CEO must answer. Written by the product owner, closed only by the CEO.
+title: "D-xx: "
+labels: ["decision", "status: draft"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What has to be decided, and why it cannot be left open.
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options
+      description: Numbered. Each with what it costs and what it gives up.
+      value: |
+        1. 
+        2. 
+    validations:
+      required: true
+  - type: textarea
+    id: recommendation
+    attributes:
+      label: Recommendation
+      description: One option, with the reasoning. Not a survey.
+    validations:
+      required: true
+  - type: input
+    id: blocks
+    attributes:
+      label: Blocks
+      placeholder: "R-402 (#32), R-403 (#33)"
+    validations:
+      required: true
