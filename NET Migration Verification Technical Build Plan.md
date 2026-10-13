@@ -109,8 +109,8 @@ Instrument the legacy app with AltCover, which supports both .NET Framework and 
 | Weeks | Phase | What you build | Exit test |
 | --- | --- | --- | --- |
 | 0 | Requirements | Write every requirement as a GitHub issue with acceptance criteria; resolve open decisions; set up the Windows environment | Every requirement is labelled `status: locked` or deferred, and no decision issue is open |
-| 1–3 | Test bed | Run Microsoft's legacy eShop MVC sample on .NET Framework; port it to .NET 10 with an AI coding agent; plant 10 known behavior bugs in the port | Both versions run locally, and you have a written list of the 10 planted bugs |
-| 4–7 | Capture and replay | YARP capture proxy, recording format with redaction and encryption at rest, sequential replay with cookie and token rewriting | A recorded 20-minute session replays against both versions with no crashes |
+| 1–3 | Test bed | Run Microsoft's legacy eShop MVC sample on .NET Framework; port it to .NET 10 with an AI coding agent; plant 10 known behavior bugs in the port; add a Windows-authentication (Kerberos) variant in a test Active Directory domain | Both versions run locally (including the Kerberos variant), and you have a written list of the 10 planted bugs |
+| 4–7 | Capture and replay | YARP capture proxy, recording format with redaction and encryption at rest, sequential replay with cookie and token rewriting, Kerberos replay as mapped test accounts | A recorded 20-minute session replays against both versions with no crashes |
 | 8–12 | Normalize, diff, report | Self-replay noise learning, rule file, JSON/HTML differ, root-cause grouping, HTML report | Finds at least 9 of 10 planted bugs with fewer than 5 false alarms; **first paid assessment can start** |
 | 13–18 | Database side effects | Snapshot restore per run, Change Data Capture reader, row-level diff, WireMock.Net downstream mocks | Catches a planted bug that writes a wrong value while returning an identical page |
 | 19–22 | Evidence and CI | PDF report, accept list with reasons, coverage via AltCover, CI exit codes and JUnit output, Docker image | A design partner runs it in their own pipeline without your help |
@@ -126,7 +126,7 @@ Run real assessments from week 12 using the internal version. Every false alarm 
 
 | Problem | Why it is hard | How to solve it |
 | --- | --- | --- |
-| Windows authentication | Kerberos and NTLM tickets cannot be replayed | Replay as dedicated test accounts; the proxy injects fresh credentials per session and maps recorded users to test users |
+| Windows authentication | Kerberos and NTLM tickets cannot be replayed | Replay as dedicated test accounts; the replayer obtains fresh Kerberos tickets per session and maps recorded users to test users. In v1, Kerberos only (Phase 2); NTLM is not a goal |
 | Session state and anti-forgery tokens | Values issued in one run are rejected in another | Track tokens per session: read each new value from the target's response and substitute it into later requests |
 | Time-dependent logic | "Orders from the last 7 days" changes with the clock | Restore a snapshot whose dates are shifted to match replay time, and add a rule for time-derived fields |
 | Non-deterministic ordering | Unordered queries return rows in any order | Learned automatically by self-replay; fall back to order-insensitive comparison rules |
