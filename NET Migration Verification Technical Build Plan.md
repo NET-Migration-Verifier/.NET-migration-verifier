@@ -8,7 +8,7 @@ Oct 13, 2026 · @logiance
 
 The core idea is borrowed from differential testing (the approach Twitter open-sourced as Diffy): run the same input through two versions and compare outputs. The key trick is replaying the legacy app against itself first. Anything that differs between two runs of the *same* code is noise (timestamps, IDs, ordering) and gets filtered out automatically, so only real behavior changes reach the report.
 
-**What v1 verifies:** HTTP responses (status, headers, body) for ASP.NET MVC and Web API apps, and from week 18, the SQL Server rows each request writes.
+**What v1 verifies:** HTTP responses (status, headers, body) for ASP.NET MVC and Web API apps, and from week 13, the SQL Server rows each request writes.
 
 **Design principles:**
 
@@ -61,7 +61,7 @@ Ship a built-in rule library of known Framework-to-.NET 10 differences. That lib
 
 Compare normalized outputs structurally (JSON tree, XML tree, HTML DOM, then plain text as a fallback). Give each difference a signature: endpoint pattern, path in the response, and type of change. Group identical signatures, so 4,000 raw mismatches become 12 root causes such as "`/api/orders/*` returns dates in a different format." An optional summary step can run each group through an LLM using the customer's own API key or a local model, never yours.
 
-### 6. Database side effects (from week 18)
+### 6. Database side effects (from week 13)
 
 Enable SQL Server Change Data Capture or Change Tracking on the snapshot during replay, read the rows each request inserted, updated or deleted, and diff those changes between legacy and migrated runs. This catches the most dangerous bugs: a page that looks right but writes the wrong value.
 
@@ -104,16 +104,17 @@ Instrument the legacy app with AltCover, which supports both .NET Framework and 
 
 ## Build sequence for a solo founder
 
-**Build in the order customers feel value: HTTP verification first, database side effects second, automation and polish last.** Each phase ends with a test you must pass before moving on. Assuming a start the week of 19 Oct 2026, the internal version is usable around mid-January 2027 and v1 ships around early April 2027.
+**Build in the order customers feel value: HTTP verification first, database side effects second, automation and polish last.** Each phase ends with a test you must pass before moving on. A one-week Phase 0 (week of 19 Oct 2026) locks the requirements first; week 1 starts 26 Oct 2026, the internal version is usable around mid-January 2027 and v1 ships around mid-April 2027. Requirements are tracked as GitHub issues, one milestone per phase; see `docs/roadmap.md`.
 
 | Weeks | Phase | What you build | Exit test |
 | --- | --- | --- | --- |
+| 0 | Requirements | Write every requirement as a GitHub issue with acceptance criteria; resolve open decisions; set up the Windows environment | Every requirement is labelled `status: locked` or deferred, and no decision issue is open |
 | 1–3 | Test bed | Run Microsoft's legacy eShop MVC sample on .NET Framework; port it to .NET 10 with an AI coding agent; plant 10 known behavior bugs in the port | Both versions run locally, and you have a written list of the 10 planted bugs |
-| 3–7 | Capture and replay | YARP capture proxy, recording format with redaction, sequential replay with cookie and token rewriting | A recorded 20-minute session replays against both versions with no crashes |
-| 7–12 | Normalize, diff, report | Self-replay noise learning, rule file, JSON/HTML differ, root-cause grouping, HTML report | Finds at least 9 of 10 planted bugs with fewer than 5 false alarms; **first paid assessment can start** |
-| 12–18 | Database side effects | Snapshot restore per run, Change Data Capture reader, row-level diff, WireMock.Net downstream mocks | Catches a planted bug that writes a wrong value while returning an identical page |
-| 18–22 | Evidence and CI | PDF report, accept list with reasons, coverage via AltCover, CI exit codes and JUnit output, Docker image | A design partner runs it in their own pipeline without your help |
-| 22–24 | Ship v1 | Installers, offline licensing, docs, built-in rule library from partner findings | Second client installs and gets a first report in under 2 days |
+| 4–7 | Capture and replay | YARP capture proxy, recording format with redaction and encryption at rest, sequential replay with cookie and token rewriting | A recorded 20-minute session replays against both versions with no crashes |
+| 8–12 | Normalize, diff, report | Self-replay noise learning, rule file, JSON/HTML differ, root-cause grouping, HTML report | Finds at least 9 of 10 planted bugs with fewer than 5 false alarms; **first paid assessment can start** |
+| 13–18 | Database side effects | Snapshot restore per run, Change Data Capture reader, row-level diff, WireMock.Net downstream mocks | Catches a planted bug that writes a wrong value while returning an identical page |
+| 19–22 | Evidence and CI | PDF report, accept list with reasons, coverage via AltCover, CI exit codes and JUnit output, Docker image | A design partner runs it in their own pipeline without your help |
+| 23–24 | Ship v1 | Installers, offline licensing, docs, built-in rule library from partner findings | Second client installs and gets a first report in under 2 days |
 
 Use an AI coding agent throughout for boilerplate, tests and the eShop port; keep the differ, normalization and grouping logic hand-reviewed, because false alarms are the product's main failure mode.
 
@@ -144,7 +145,7 @@ Enterprise security reviews are the biggest blocker for a tool that records traf
 - **No data leaves the customer.** The tool has no cloud backend; recordings, replays and reports stay on their machines.
 - **Staging first.** The default setup records staging or test traffic; production capture is opt-in and documented separately.
 - **Redaction before storage.** Sensitive fields are masked at capture time, and the manifest records which rules ran.
-- **Encryption at rest.** Recordings are encrypted with a key the customer controls.
+- **Encryption at rest.** Recordings are encrypted with a key the customer controls (built in weeks 4–7, before the first paid assessment).
 - **No outbound calls during replay.** Network egress is blocked except to configured targets and mocks.
 - **No telemetry by default.** Any usage reporting is opt-in and documented field by field.
 - **Tamper-evident evidence.** Reports include hashes of the recording and configuration, so an auditor can confirm what was tested.
