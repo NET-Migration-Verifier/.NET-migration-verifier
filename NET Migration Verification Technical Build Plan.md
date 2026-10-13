@@ -128,7 +128,7 @@ Run real assessments from week 12 using the internal version. Every false alarm 
 | --- | --- | --- |
 | Windows authentication | Kerberos and NTLM tickets cannot be replayed | Replay as dedicated test accounts; the replayer obtains fresh Kerberos tickets per session and maps recorded users to test users. In v1, Kerberos only (Phase 2); NTLM is not a goal |
 | Session state and anti-forgery tokens | Values issued in one run are rejected in another | Track tokens per session: read each new value from the target's response and substitute it into later requests |
-| Time-dependent logic | "Orders from the last 7 days" changes with the clock | Restore a snapshot whose dates are shifted to match replay time, and add a rule for time-derived fields |
+| Time-dependent logic | "Orders from the last 7 days" changes with the clock | Phase 3: self-replay and time-derived field rules catch time printed in responses; runs execute back to back. Phase 4: shift snapshot dates (and dates in recorded requests) to replay time. Date shifting protects coverage, not the false alarm rate, so it is the first item cut if Phase 4 slips |
 | Non-deterministic ordering | Unordered queries return rows in any order | Learned automatically by self-replay; fall back to order-insensitive comparison rules |
 | Concurrency | Parallel replay of sessions touching the same data gives inconsistent results | Default to sequential per session; parallelize only sessions with no shared tables |
 | Writes to external systems | Replaying could send real emails or payments | Downstream calls always go to mocks during replay; block outbound network by default |
