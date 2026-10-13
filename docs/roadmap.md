@@ -2,7 +2,7 @@
 
 How the [technical build plan](../NET%20Migration%20Verification%20Technical%20Build%20Plan.md) turns into work: what a requirement is, how a decision gets made, and who owns which kind of issue.
 
-The schedule lives in [delivery-plan.md](delivery-plan.md): 14 Oct to 14 Nov 2026, 32 days at seven days a week, three phases, a daily standup that every decision flows through. Market and competitive context is in [product-context.md](product-context.md).
+The schedule lives in [delivery-plan.md](delivery-plan.md): 14 Oct to 24 Nov 2026, 42 days at seven days a week, three phases, a daily standup that every decision flows through. Market and competitive context is in [product-context.md](product-context.md).
 
 ## How requirements work
 
@@ -27,10 +27,10 @@ Numbering: `R-0xx` applies everywhere, `R-1xx` to `R-6xx` group by the area they
 
 | Phase | Dates | Exit |
 | --- | --- | --- |
-| Requirements | Wed 14 - Tue 20 Oct 2026 | No decision open, every requirement locked or deferred, fourteen daily targets written, the Windows machine serving the legacy app |
-| Development | Wed 21 Oct - Tue 3 Nov 2026 | The core loop finds at least 9 of the 10 planted bugs with fewer than 5 false-alarm groups |
-| System testing | Wed 4 - Tue 10 Nov 2026 | A full run from install to report with no step that needs someone who built it |
-| Margin | Wed 11 - Sat 14 Nov 2026 | The only slack in the cycle |
+| Requirements | Wed 14 - Tue 20 Oct 2026 | No decision open, every requirement locked or deferred, twenty-four daily targets written, the Windows machine serving the legacy app |
+| Development | Wed 21 Oct - Fri 13 Nov 2026 | The core loop, including a Kerberos session, finds at least 9 of the 10 planted bugs with fewer than 5 false-alarm groups |
+| System testing | Sat 14 - Fri 20 Nov 2026 | A full run from install to report with no step that needs someone who built it |
+| Margin | Sat 21 - Tue 24 Nov 2026 | The only slack in the cycle |
 
 Day-by-day detail, the shape of a standup, and what the CEO has to supply are in [delivery-plan.md](delivery-plan.md).
 
