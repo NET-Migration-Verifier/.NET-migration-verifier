@@ -102,6 +102,13 @@ Add-Content C:\Windows\System32\drivers\etc\hosts "`r`n192.168.56.101`tapp01.tes
 
 **Evidence:** the app server preflight shows Domain membership as PASS, `Test-ComputerSecureChannel` on `app01` returns `True`, and on the host `Test-NetConnection app01.testbed.local -Port 5985` succeeds.
 
+Once `app01` is in the domain, steps 5 and 6 do not need its console. `VBoxManage guestcontrol` into `app01` runs with a filtered, non-admin token, but from `dc01` a remote session as the domain Administrator is fully elevated:
+
+```powershell
+# on dc01
+Invoke-Command -ComputerName app01.testbed.local -Credential TESTBED\Administrator -FilePath .\step.ps1
+```
+
 ## 5. `app01`: IIS, full, not IIS Express
 
 IIS Express falls back to NTLM on localhost, which breaks the Kerberos work in week 3 ([T1.3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/67), [R-105](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/48)).
@@ -118,20 +125,32 @@ Then install the **.NET 10 Hosting Bundle** and run `iisreset`, so the port can 
 
 ## 6. `app01`: SQL Server Developer edition, with Agent running
 
-Developer edition, not Express. D-10 ([#55](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/55)) chose Change Data Capture for Phase 4, and Express and Web editions do not have it. Developer is free and has the full feature set.
+Developer edition, not Express. D-10 ([#55](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/55)) chose Change Data Capture for Phase 4, and Express and Web editions do not have it. SQL Server 2025 splits Developer into Standard Developer and Enterprise Developer; both are free and both have CDC.
+
+Download the bootstrapper from the [winget manifest](https://github.com/microsoft/winget-pkgs/tree/master/manifests/m/Microsoft/SQLServer/2025/Developer) URL and check its SHA256 against the manifest, then fetch the media and install the engine quietly:
 
 ```powershell
+.\SQL2025-SSEI-StdDev.exe /ACTION=Download /MEDIAPATH=C:\SQLMedia /MEDIATYPE=ISO /QUIET
+$drive = (Mount-DiskImage C:\SQLMedia\SQLServer2025-x64-ENU-StdDev.iso -PassThru | Get-Volume).DriveLetter
+& "${drive}:\setup.exe" /Q /ACTION=Install /IACCEPTSQLSERVERLICENSETERMS /SUPPRESSPRIVACYSTATEMENTNOTICE `
+    /FEATURES=SQLENGINE /INSTANCENAME=MSSQLSERVER `
+    /SQLSVCACCOUNT="NT Service\MSSQLSERVER" /AGTSVCACCOUNT="NT Service\SQLSERVERAGENT" `
+    /SQLSVCSTARTUPTYPE=Automatic /AGTSVCSTARTUPTYPE=Automatic `
+    /SQLSYSADMINACCOUNTS="TESTBED\tbadmin" "TESTBED\Domain Admins" `
+    /SQLMAXMEMORY=2560 /TCPENABLED=1 /UPDATEENABLED=0
 Set-Service -Name SQLSERVERAGENT -StartupType Automatic
 Start-Service -Name SQLSERVERAGENT
+New-NetFirewallRule -Name TestBed-SQL-1433 -DisplayName 'SQL Server 1433 (test bed)' -Direction Inbound `
+    -Protocol TCP -LocalPort 1433 -RemoteAddress 10.10.10.0/24, 192.168.56.0/24 -Action Allow
 ```
 
 Agent matters as much as the edition: without it the CDC capture job never runs and the change tables stay **silently empty**, which is the worst way for Phase 4 to fail.
 
-Cap the instance at about 2.5 GB (**Server Properties → Memory → Maximum server memory**, 2560 MB), or SQL Server takes the whole VM and IIS starts paging.
+`/SQLMAXMEMORY=2560` caps the instance at about 2.5 GB (**Server Properties → Memory → Maximum server memory** afterwards), or SQL Server takes the whole VM and IIS starts paging.
 
 Install SQL Server Management Studio on the host and connect to `app01` — the seeding and backup work in [T1.2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/66) is much easier with it.
 
-**Evidence:** the app server preflight shows SQL Server edition and SQL Server Agent as PASS.
+**Evidence:** the app server preflight shows SQL Server edition and SQL Server Agent as PASS, and a Windows-authenticated connection from `dc01` to `app01` reports `auth_scheme` `KERBEROS` in `sys.dm_exec_connections`.
 
 ## 7. Host: .NET Framework 4.8 Developer Pack
 
