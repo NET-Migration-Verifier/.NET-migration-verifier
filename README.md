@@ -1,6 +1,6 @@
 # .NET-migration-verifier
 
-Records how a legacy ASP.NET app responds to real requests, replays them against the migrated .NET 10 app, and reports every behavioral difference. See [the technical build plan](NET%20Migration%20Verification%20Technical%20Build%20Plan.md). Phases, dates and the requirements process are in [docs/roadmap.md](docs/roadmap.md), the week-by-week plan and working cadence in [docs/delivery-plan.md](docs/delivery-plan.md), and the external facts the requirements rest on in [docs/product-context.md](docs/product-context.md).
+Records how a legacy ASP.NET app responds to real requests, replays them against the migrated .NET 10 app, and reports every behavioral difference. See [the technical build plan](NET%20Migration%20Verification%20Technical%20Build%20Plan.md). The pipeline end to end is drawn in [docs/product-flow.md](docs/product-flow.md). Phases, dates and the requirements process are in [docs/roadmap.md](docs/roadmap.md), the week-by-week plan and working cadence in [docs/delivery-plan.md](docs/delivery-plan.md), and the external facts the requirements rest on in [docs/product-context.md](docs/product-context.md).
 
 ## Layout
 

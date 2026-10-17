@@ -21,7 +21,7 @@ The core idea is borrowed from differential testing (the approach Twitter open-s
 
 **Eight steps in one pipeline; the highlighted normalize step is what separates a usable product from a flood of false alarms.**
 
-&#91;embedded content: Version 1 architecture · everything runs on the customer's infrastructure\]
+See [the product flow diagram](docs/product-flow.md) for the pipeline end to end, and the operator's loop around it.
 
 ## Component design
 
