@@ -83,15 +83,24 @@ Promotion points `dc01`'s DNS at itself and keeps 8.8.8.8 and 1.1.1.1 as forward
 
 ## 4. `app01`: application server, joined to the domain
 
-Create a VM named `app01` with 6 GB RAM, 2-4 CPUs and a 60 GB dynamic disk, on the same NAT Network. Install **Windows Server with Desktop Experience**, point its DNS at `dc01`, and join it:
+`new-vms.ps1` creates `app01` with 6 GB RAM and Desktop Experience, already named `app01`, on the same NAT Network (`Ethernet`) plus a VirtualBox **host-only** adapter (`Ethernet 2`), since the host cannot reach a VM on a NAT Network. From an elevated prompt on `app01`, point its DNS at `dc01`, keep the host-only address out of the domain's DNS, and join:
 
 ```powershell
-Add-Computer -DomainName testbed.local -NewName app01 -Restart
+sc.exe failure VBoxService reset= 86400 actions= restart/5000/restart/5000/restart/30000
+Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses 10.10.10.10
+Set-DnsClient -InterfaceAlias 'Ethernet 2' -RegisterThisConnectionsAddress $false
+Add-Computer -DomainName testbed.local -Credential TESTBED\tbadmin -Restart
 ```
 
-The host cannot reach a VM on a NAT Network, so give `app01` a second adapter on a VirtualBox **host-only** network too, and add its host-only address to the host's `C:\Windows\System32\drivers\etc\hosts` as `app01.testbed.local`. That is the path the host publishes builds and browses over.
+The join can still register the host-only address. If `Resolve-DnsName app01.testbed.local` on `dc01` returns `192.168.56.x`, delete that A record on `dc01` with `Remove-DnsServerResourceRecord -ZoneName testbed.local -Name app01 -RRType A -RecordData <address>`.
 
-**Evidence:** the app server preflight shows Domain membership as PASS.
+On the host, from an elevated prompt, add `app01`'s host-only address to the hosts file. That is the path the host publishes builds and browses over.
+
+```powershell
+Add-Content C:\Windows\System32\drivers\etc\hosts "`r`n192.168.56.101`tapp01.testbed.local"
+```
+
+**Evidence:** the app server preflight shows Domain membership as PASS, `Test-ComputerSecureChannel` on `app01` returns `True`, and on the host `Test-NetConnection app01.testbed.local -Port 5985` succeeds.
 
 ## 5. `app01`: IIS, full, not IIS Express
 
