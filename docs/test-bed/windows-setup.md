@@ -156,7 +156,9 @@ Install SQL Server Management Studio on the host and connect to `app01` — the 
 
 `eShopLegacyMVC` targets .NET Framework 4.7.2 ([T1.1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/65)); the 4.8 developer pack covers it and is what Visual Studio builds against. Windows Server 2025 already has the 4.8.1 runtime, so `app01` needs nothing extra.
 
-**Evidence:** the `Release` value under `HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full` is 461808 or higher.
+The Visual Studio ASP.NET workload in step 8 installs it, so check before downloading anything.
+
+**Evidence:** `Test-Path "${env:ProgramFiles(x86)}\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\mscorlib.dll"` returns `True`. The runtime `Release` value under `HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full` (461808 or higher) only shows the runtime, which is there without the developer pack.
 
 ## 8. Host: Visual Studio 2022, ASP.NET workload
 
