@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# Preflight evidence, generated on the machine being checked
+scripts/test-bed/preflight-report.md
