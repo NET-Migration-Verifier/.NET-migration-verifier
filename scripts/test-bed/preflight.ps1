@@ -18,10 +18,17 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$ReportPath = (Join-Path $PSScriptRoot 'preflight-report.md')
+    [string]$ReportPath
 )
 
 $ErrorActionPreference = 'Stop'
+
+# $PSScriptRoot can be empty while parameter defaults are evaluated on Windows PowerShell 5.1,
+# so the default is resolved here instead.
+if (-not $ReportPath) {
+    $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+    $ReportPath = Join-Path $scriptDir 'preflight-report.md'
+}
 $checks = New-Object System.Collections.ArrayList
 
 function Add-Check {
