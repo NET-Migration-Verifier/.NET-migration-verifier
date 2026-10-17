@@ -56,15 +56,30 @@ Download the ISO from the Microsoft Evaluation Center into `D:\TestBed\ISO`. It 
 
 **First of the VMs, because it has the longest lead time and everything Kerberos depends on it.**
 
-Create a VM named `dc01` with 2 GB RAM, 2 CPUs and a 30 GB dynamic disk. Install **Server Core**, and give it a fixed IP address on a VirtualBox **NAT Network** (for example `TestBed`, `10.10.10.0/24`) so the VMs can reach each other and the internet. Then:
+`scripts/test-bed/new-vms.ps1` creates both VMs on the `TestBed` NAT Network (`10.10.10.0/24`) and installs them unattended, `dc01` as **Server Core** with 2 GB RAM. The guests' VBoxService may come up stopped; if `VBoxManage guestcontrol` reports "guest execution service is not ready", run `Restart-Service VBoxService` from an elevated prompt in the guest and set it to restart on failure:
 
 ```powershell
-Rename-Computer -NewName dc01 -Restart
-Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
-Install-ADDSForest -DomainName testbed.local -InstallDns   # reboots
+sc.exe failure VBoxService reset= 86400 actions= restart/5000/restart/5000/restart/30000
 ```
 
-**Evidence:** `Get-ADDomain` on `dc01` returns `testbed.local`.
+`dc01` needs a fixed address outside the DHCP range, so first move the NAT Network's DHCP range up, on the host:
+
+```powershell
+& "$env:ProgramFiles\Oracle\VirtualBox\VBoxManage.exe" dhcpserver modify --network TestBed --server-ip 10.10.10.2 --netmask 255.255.255.0 --lower-ip 10.10.10.100 --upper-ip 10.10.10.254 --enable
+```
+
+Then, on `dc01` (it is already named `dc01` by the unattended install):
+
+```powershell
+New-NetIPAddress -InterfaceAlias Ethernet -IPAddress 10.10.10.10 -PrefixLength 24 -DefaultGateway 10.10.10.1
+Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses 8.8.8.8,1.1.1.1
+Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
+Install-ADDSForest -DomainName testbed.local -DomainNetbiosName TESTBED -InstallDns   # reboots
+```
+
+Promotion points `dc01`'s DNS at itself and keeps 8.8.8.8 and 1.1.1.1 as forwarders. For a few minutes after the reboot `Get-ADDomain` fails with "Unable to find a default server" while SYSVOL initialises; wait for `nltest /dsgetdc:testbed.local` to succeed.
+
+**Evidence:** `Get-ADDomain` on `dc01` returns `testbed.local`, and `nltest /dsgetdc:testbed.local` returns `dc01.testbed.local` at `10.10.10.10`.
 
 ## 4. `app01`: application server, joined to the domain
 
