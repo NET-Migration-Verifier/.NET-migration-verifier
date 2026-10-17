@@ -1,80 +1,98 @@
 # Windows machine setup
 
-Provisioning the one Windows machine the test bed runs on. D-01 ([#2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/2)) settled it as a physical machine with 16 GB RAM, not a cloud VM and not a VM on the Mac.
+Provisioning the one Windows machine the test bed runs on. D-01 ([#2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/2)) settled it as a physical machine with 16 GB RAM, not a cloud VM and not a VM on the Mac. The machine runs Windows 11 Home, which has no Hyper-V and cannot join a domain, and there is no budget for a Pro upgrade. So the host only builds, and everything that needs a domain runs in two free VirtualBox VMs on Windows Server 2025 Evaluation.
 
-This runbook is the written form of what [T1.1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/65) to [T1.3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/67) need in place before they start. The setup scripts T1.12 ([#76](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/76)) delivers are what these steps turn into, so keep the two in step rather than letting them drift.
+This runbook is the written form of what [T1.1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/65) to [T1.3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/67) and [T1.8](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/72) need in place before they start. The setup scripts T1.12 ([#76](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/76)) delivers are what these steps turn into, so keep the two in step rather than letting them drift.
 
 **Every step names the evidence it produces.** Per `docs/delivery-plan.md`, nothing is reported that cannot be pointed at, so the evidence is the point of the step, not paperwork after it.
 
+## Layout
+
+| Machine | Runs | RAM | Disk |
+| --- | --- | --- | --- |
+| Host, Windows 11 Home | Visual Studio, .NET SDKs, Git, VirtualBox | what is left, about 7 GB | `C:` for installs, 40 GB free |
+| `dc01`, Server Core | Active Directory and DNS for `testbed.local` | 2 GB | about 30 GB on `D:` |
+| `app01`, Server with Desktop Experience, joined to the domain | Full IIS, SQL Server Developer with Agent, both eShop versions | 6 GB | about 60 GB on `D:` |
+
+The requirements do not change, only where they are met: full IIS rather than IIS Express, Kerberos ([R-105](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/48)), SQL Server Agent for CDC (D-10, [#55](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/55)) and W3C logging (D-08, [#53](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/53)). Kerberos now crosses a real network between domain members, which is closer to what customers have than a single box.
+
+Two things to keep in mind throughout:
+
+- **RAM is tight.** Shut down VMs you are not using, cap SQL Server's memory (step 6), and close browser tabs while both VMs run. Swapping makes replay timings noisy.
+- **The host is not a domain member,** so it cannot obtain a Kerberos ticket. Windows quietly falls back to NTLM instead of failing, so Kerberos tests run from inside a domain-joined VM, and each one is checked with `klist`.
+
 ## 0. Preflight
 
-```powershell
-# From an elevated PowerShell prompt, in the repository root
-powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -DataDrive D:
-```
-
-Read-only — it installs nothing. It prints a table and writes `scripts/test-bed/preflight-report.md`, which is the evidence for the standup. Run it now to see what is missing, and again at the end to show it is not.
-
-## Disk layout
-
-When the system drive is short of space, the data goes on a second drive, and only the installs stay on the system drive. The current machine uses `D:`; pass `-DataDrive D:` to every preflight run so each drive is checked against its own share.
-
-| Drive | Holds | Space |
-| --- | --- | --- |
-| System (`C:`) | Visual Studio, SQL Server binaries, .NET SDKs | 40 GB free |
-| Data (`D:`) | Domain controller VM, SQL Server data, log and backup files, both apps | 110 GB free |
-
-Point each piece at the data drive as it is installed, because moving it afterwards is harder than choosing the path up front:
-
-- **Hyper-V**, after step 1's reboot: `Set-VMHost -VirtualMachinePath 'D:\TestBed\Hyper-V' -VirtualHardDiskPath 'D:\TestBed\Hyper-V\Virtual Hard Disks'`
-- **SQL Server**, in step 5's setup, on the Database Engine Configuration → Data Directories tab: set the data root to `D:\TestBed\SQL`, which puts the data, log, tempdb and backup folders under it.
-- **The apps**: clone the eShop forks and set the IIS site paths under `D:\TestBed\Apps`.
-
-## 1. Windows edition and Hyper-V
-
-**First, because it has the longest lead time and everything Kerberos depends on it.**
-
-Hyper-V hosts the Active Directory domain controller ([T1.8](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/72)). Windows Home does not have Hyper-V, and the edition upgrade is its own delay.
+The script runs in two places, and each role checks only what that machine needs:
 
 ```powershell
-Get-ComputerInfo | Select-Object WindowsProductName, CsTotalPhysicalMemory
-Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -All   # reboots
+# On the host, from an elevated PowerShell prompt, in the repository root
+powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -Role Host -DataDrive D:
+
+# Inside app01, from an elevated prompt, once the repository is copied or cloned there
+powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -Role AppServer
 ```
 
-**Evidence:** `Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All` reports `Enabled` after the reboot.
+Read-only — it installs nothing. It prints a table and writes `scripts/test-bed/preflight-report.md`, which is the evidence for the standup. Run it now to see what is missing, and again at the end to show it is not. `-Role AllInOne` keeps the original single-machine checks, for a Pro machine with Hyper-V.
 
-**Decide the RAM question here too.** 16 GB is the floor, and it is tight: SQL Server, the legacy app, the port and a 2-4 GB domain controller VM share this machine. If RAM is being ordered, order it today — shipping is lead time on the critical path.
+## 1. Host: VirtualBox, with VMs on `D:`
 
-## 2. IIS, full, not IIS Express
+```powershell
+winget install Oracle.VirtualBox
+& "$env:ProgramFiles\Oracle\VirtualBox\VBoxManage.exe" setproperty machinefolder 'D:\TestBed\VMs'
+```
+
+CPU virtualisation must be on in the BIOS (SVM on AMD, VT-x on Intel). It is on this machine.
+
+**Evidence:** the host preflight shows VirtualBox and VirtualBox machine folder as PASS.
+
+## 2. Windows Server 2025 Evaluation ISO
+
+Download the ISO from the Microsoft Evaluation Center into `D:\TestBed\ISO`. It is free and fully featured for 180 days, and `slmgr /rearm` extends it, up to five times. The licence runs out around mid-April 2027, close to the v1 ship date, so set a reminder for 1 Apr 2027 to check `slmgr /dlv` on both VMs.
+
+**Evidence:** the ISO is on `D:\TestBed\ISO`.
+
+## 3. `dc01`: domain controller
+
+**First of the VMs, because it has the longest lead time and everything Kerberos depends on it.**
+
+Create a VM named `dc01` with 2 GB RAM, 2 CPUs and a 30 GB dynamic disk. Install **Server Core**, and give it a fixed IP address on a VirtualBox **NAT Network** (for example `TestBed`, `10.10.10.0/24`) so the VMs can reach each other and the internet. Then:
+
+```powershell
+Rename-Computer -NewName dc01 -Restart
+Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
+Install-ADDSForest -DomainName testbed.local -InstallDns   # reboots
+```
+
+**Evidence:** `Get-ADDomain` on `dc01` returns `testbed.local`.
+
+## 4. `app01`: application server, joined to the domain
+
+Create a VM named `app01` with 6 GB RAM, 2-4 CPUs and a 60 GB dynamic disk, on the same NAT Network. Install **Windows Server with Desktop Experience**, point its DNS at `dc01`, and join it:
+
+```powershell
+Add-Computer -DomainName testbed.local -NewName app01 -Restart
+```
+
+The host cannot reach a VM on a NAT Network, so give `app01` a second adapter on a VirtualBox **host-only** network too, and add its host-only address to the host's `C:\Windows\System32\drivers\etc\hosts` as `app01.testbed.local`. That is the path the host publishes builds and browses over.
+
+**Evidence:** the app server preflight shows Domain membership as PASS.
+
+## 5. `app01`: IIS, full, not IIS Express
 
 IIS Express falls back to NTLM on localhost, which breaks the Kerberos work in week 3 ([T1.3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/67), [R-105](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/48)).
 
 ```powershell
-Enable-WindowsOptionalFeature -Online -All -FeatureName `
-    IIS-WebServerRole, IIS-WebServer, IIS-ASPNET45, IIS-WindowsAuthentication, IIS-HttpLogging, IIS-ManagementConsole
+Install-WindowsFeature Web-Server, Web-Asp-Net45, Web-Windows-Auth, Web-Http-Logging, Web-Mgmt-Console
 ```
 
-`IIS-HttpLogging` is not optional here: D-08 ([#53](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/53)) reads the authenticated user out of the W3C log, joined on a request id the capture proxy injects. No logging, no user attribution, no Kerberos replay.
+Then install the **.NET 10 Hosting Bundle** and run `iisreset`, so the port can run on IIS behind Windows Authentication too.
 
-**Evidence:** `(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\InetStp').VersionString` reports 8.5 or later.
+`Web-Http-Logging` is not optional here: D-08 ([#53](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/53)) reads the authenticated user out of the W3C log, joined on a request id the capture proxy injects. No logging, no user attribution, no Kerberos replay.
 
-## 3. .NET Framework 4.8 Developer Pack
+**Evidence:** the app server preflight shows IIS, IIS Windows Authentication, IIS HTTP Logging and ASP.NET Core Hosting Bundle as PASS.
 
-`eShopLegacyMVC` targets .NET Framework 4.7.2 ([T1.1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/65)); the 4.8 developer pack covers it and is what Visual Studio builds against.
-
-**Evidence:** the `Release` value under `HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full` is 461808 or higher.
-
-## 4. Visual Studio 2022, ASP.NET workload
-
-```powershell
-winget install --id Microsoft.VisualStudio.2022.Community
-```
-
-Then add **ASP.NET and web development** in the Visual Studio Installer. This is the largest download of the whole setup; start it before the steps below rather than after.
-
-**Evidence:** the solution in step 7 builds with no errors.
-
-## 5. SQL Server Developer edition, with Agent running
+## 6. `app01`: SQL Server Developer edition, with Agent running
 
 Developer edition, not Express. D-10 ([#55](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/55)) chose Change Data Capture for Phase 4, and Express and Web editions do not have it. Developer is free and has the full feature set.
 
@@ -85,31 +103,58 @@ Start-Service -Name SQLSERVERAGENT
 
 Agent matters as much as the edition: without it the CDC capture job never runs and the change tables stay **silently empty**, which is the worst way for Phase 4 to fail.
 
-Install SQL Server Management Studio alongside it — the seeding and backup work in [T1.2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/66) is much easier with it.
+Cap the instance at about 2.5 GB (**Server Properties → Memory → Maximum server memory**, 2560 MB), or SQL Server takes the whole VM and IIS starts paging.
 
-**Evidence:** `Get-Service SQLSERVERAGENT` reports `Running`, and the instance's `Edition` registry value says Developer.
+Install SQL Server Management Studio on the host and connect to `app01` — the seeding and backup work in [T1.2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/66) is much easier with it.
 
-## 6. .NET 10 SDK and Git
+**Evidence:** the app server preflight shows SQL Server edition and SQL Server Agent as PASS.
+
+## 7. Host: .NET Framework 4.8 Developer Pack
+
+`eShopLegacyMVC` targets .NET Framework 4.7.2 ([T1.1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/65)); the 4.8 developer pack covers it and is what Visual Studio builds against. Windows Server 2025 already has the 4.8.1 runtime, so `app01` needs nothing extra.
+
+**Evidence:** the `Release` value under `HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full` is 461808 or higher.
+
+## 8. Host: Visual Studio 2022, ASP.NET workload
+
+```powershell
+winget install --id Microsoft.VisualStudio.2022.Community
+```
+
+Then add **ASP.NET and web development** in the Visual Studio Installer. This is the largest download of the whole setup; start it before the VM steps rather than after. `C:` is short of space, so on the installer's **Installation locations** tab move the download cache and shared components to `D:`.
+
+Build on the host, then publish to `app01` over its admin share or Web Deploy. The apps live under `C:\TestBed\Apps` on `app01`.
+
+**Evidence:** the solution in step 10 builds with no errors.
+
+## 9. Host: .NET 10 SDK and Git
 
 The .NET 10 SDK builds both the port ([R-102](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/14)) and the verifier itself; the version is pinned in `global.json`.
 
-**Evidence:** `dotnet --list-sdks` shows a 10.x SDK, and `git --version` returns.
-
-## 7. Prove it
-
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -DataDrive D:
+winget install Microsoft.DotNet.SDK.10
 ```
 
-Zero FAIL rows. Paste `preflight-report.md` into the current standup issue. That is the "Windows environment is ready" half of the Phase 0 exit gate; the rest of the gate is the requirements being locked.
+**Evidence:** `dotnet --list-sdks` shows a 10.x SDK, and `git --version` returns.
 
-## 8. Then, and only then
+## 10. Prove it
+
+```powershell
+# On the host
+powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -Role Host -DataDrive D:
+# Inside app01
+powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -Role AppServer
+```
+
+Zero FAIL rows in both. Paste both `preflight-report.md` files into the current standup issue. That is the "Windows environment is ready" half of the Phase 0 exit gate; the rest of the gate is the requirements being locked.
+
+## 11. Then, and only then
 
 | Next | Task | Note |
 | --- | --- | --- |
 | Fork and build the legacy app | [T1.1](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/65) | `dotnet-architecture/eShopModernizing` is archived; fork it into our org |
 | Point it at SQL Server | [T1.2](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/66) | `UseMockData` stays false — Phase 4 needs real writes |
-| Host it on IIS | [T1.3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/67) | Includes the 30-minute D-08 log-join check, done while IIS is open anyway |
-| Domain controller VM | [T1.8](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/72) | Has lead time; must be ready before week 3. Give it 2-4 GB |
+| Host it on IIS | [T1.3](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/67) | On `app01`. Includes the 30-minute D-08 log-join check, done while IIS is open anyway |
+| Domain controller VM | [T1.8](https://github.com/NET-Migration-Verifier/.NET-migration-verifier/issues/72) | Steps 3-4 above; must be ready before week 3. Also settle where the Kerberos test client runs |
 
 Kerberos note carried from D-08, worth reading before T1.9 rather than during it: the capture proxy sits in the request path, so the client obtains its ticket for the **proxy's** hostname while the backend IIS has to decrypt it. That needs the SPN for the proxy's hostname registered to the app pool identity, with `useAppPoolCredentials` set accordingly. Without it every request through the proxy returns 401, and the symptom does not point at the cause.
