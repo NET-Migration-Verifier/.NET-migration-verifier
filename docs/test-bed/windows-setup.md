@@ -168,6 +168,15 @@ winget install --id Microsoft.VisualStudio.2022.Community
 
 Then add **ASP.NET and web development** in the Visual Studio Installer. This is the largest download of the whole setup; start it before the VM steps rather than after. `C:` is short of space, so on the installer's **Installation locations** tab move the download cache and shared components to `D:`.
 
+If `C:` drops under the preflight floor later (the page file grows once the VMs take 8 GB of RAM), move the caches rather than deleting them. From an elevated prompt, with Visual Studio closed:
+
+```powershell
+reg add HKLM\SOFTWARE\Microsoft\VisualStudio\Setup /v CachePath /d D:\VisualStudio\Cache /f
+robocopy C:\ProgramData\Microsoft\VisualStudio\Packages D:\VisualStudio\Cache /E /MOVE
+```
+
+Without elevation: `npm config set cache D:\Cache\npm`, a user `PIP_CACHE_DIR` of `D:\Cache\pip`, user `TEMP` and `TMP` of `D:\Temp`, and `wsl --manage Ubuntu --move D:\WSL\Ubuntu`. On this machine those freed about 10 GB.
+
 Build on the host, then publish to `app01` over its admin share or Web Deploy. The apps live under `C:\TestBed\Apps` on `app01`.
 
 **Evidence:** the solution in step 10 builds with no errors.
