@@ -10,10 +10,25 @@ This runbook is the written form of what [T1.1](https://github.com/NET-Migration
 
 ```powershell
 # From an elevated PowerShell prompt, in the repository root
-powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -DataDrive D:
 ```
 
 Read-only — it installs nothing. It prints a table and writes `scripts/test-bed/preflight-report.md`, which is the evidence for the standup. Run it now to see what is missing, and again at the end to show it is not.
+
+## Disk layout
+
+When the system drive is short of space, the data goes on a second drive, and only the installs stay on the system drive. The current machine uses `D:`; pass `-DataDrive D:` to every preflight run so each drive is checked against its own share.
+
+| Drive | Holds | Space |
+| --- | --- | --- |
+| System (`C:`) | Visual Studio, SQL Server binaries, .NET SDKs | 40 GB free |
+| Data (`D:`) | Domain controller VM, SQL Server data, log and backup files, both apps | 110 GB free |
+
+Point each piece at the data drive as it is installed, because moving it afterwards is harder than choosing the path up front:
+
+- **Hyper-V**, after step 1's reboot: `Set-VMHost -VirtualMachinePath 'D:\TestBed\Hyper-V' -VirtualHardDiskPath 'D:\TestBed\Hyper-V\Virtual Hard Disks'`
+- **SQL Server**, in step 5's setup, on the Database Engine Configuration → Data Directories tab: set the data root to `D:\TestBed\SQL`, which puts the data, log, tempdb and backup folders under it.
+- **The apps**: clone the eShop forks and set the IIS site paths under `D:\TestBed\Apps`.
 
 ## 1. Windows edition and Hyper-V
 
@@ -83,7 +98,7 @@ The .NET 10 SDK builds both the port ([R-102](https://github.com/NET-Migration-V
 ## 7. Prove it
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\test-bed\preflight.ps1 -DataDrive D:
 ```
 
 Zero FAIL rows. Paste `preflight-report.md` into the current standup issue. That is the "Windows environment is ready" half of the Phase 0 exit gate; the rest of the gate is the requirements being locked.

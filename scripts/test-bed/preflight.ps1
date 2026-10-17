@@ -13,12 +13,21 @@
 .PARAMETER ReportPath
     Where to write the markdown report. Defaults to preflight-report.md next to this script.
 
+.PARAMETER DataDrive
+    The drive that holds the domain controller VM, SQL Server data and the apps, such as D:.
+    Defaults to the system drive. When it is a different drive, the system drive only needs room
+    for the installs, and each drive is checked against its own share.
+
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File .\preflight.ps1
+
+.EXAMPLE
+    powershell -ExecutionPolicy Bypass -File .\preflight.ps1 -DataDrive D:
 #>
 [CmdletBinding()]
 param(
-    [string]$ReportPath
+    [string]$ReportPath,
+    [string]$DataDrive
 )
 
 $ErrorActionPreference = 'Stop'
@@ -84,13 +93,38 @@ Add-Check 'RAM' `
     'Order RAM now if it is coming; shipping is lead time on the critical path.' `
     'SQL Server, the legacy app, the port and a 2-4 GB domain controller VM share this box (D-01, #2).'
 
-$sysDrive = Get-PSDrive -Name ($env:SystemDrive.TrimEnd(':'))
-$freeGb = [math]::Round($sysDrive.Free / 1GB, 1)
-Add-Check 'Free disk' `
-    $(if ($freeGb -lt 60) { 'FAIL' } elseif ($freeGb -lt 150) { 'WARN' } else { 'PASS' }) `
-    "$freeGb GB free on $($env:SystemDrive)" '150 GB recommended' `
-    'Free space before installing, not halfway through the Visual Studio installer.' `
-    'Visual Studio with the ASP.NET workload, SQL Server Developer, a Windows Server VM and two apps.'
+# Free space in GB on a drive given as 'D' or 'D:', or $null when the drive does not exist.
+function Get-FreeGb {
+    param([string]$Drive)
+    $d = Get-PSDrive -Name $Drive.TrimEnd(':') -PSProvider FileSystem -ErrorAction SilentlyContinue
+    if ($d) { [math]::Round($d.Free / 1GB, 1) } else { $null }
+}
+
+$sysDriveName = $env:SystemDrive.TrimEnd(':').ToUpper()
+$dataDriveName = $(if ($DataDrive) { $DataDrive.TrimEnd(':', '\').ToUpper() } else { $sysDriveName })
+$sysFreeGb = Get-FreeGb $sysDriveName
+
+if ($dataDriveName -eq $sysDriveName) {
+    Add-Check 'Free disk' `
+        $(if ($sysFreeGb -lt 60) { 'FAIL' } elseif ($sysFreeGb -lt 150) { 'WARN' } else { 'PASS' }) `
+        "$sysFreeGb GB free on ${sysDriveName}:" '150 GB recommended' `
+        'Free space, or put the VM and SQL data on another drive and pass -DataDrive.' `
+        'Visual Studio with the ASP.NET workload, SQL Server Developer, a Windows Server VM and two apps.'
+} else {
+    Add-Check 'Free disk, system' `
+        $(if ($sysFreeGb -lt 25) { 'FAIL' } elseif ($sysFreeGb -lt 40) { 'WARN' } else { 'PASS' }) `
+        "$sysFreeGb GB free on ${sysDriveName}:" '40 GB recommended' `
+        'Free space before installing, not halfway through the Visual Studio installer.' `
+        'Visual Studio, the SQL Server binaries and the .NET SDKs install here whatever the data drive.'
+
+    $dataFreeGb = Get-FreeGb $dataDriveName
+    Add-Check 'Free disk, data' `
+        $(if ($null -eq $dataFreeGb -or $dataFreeGb -lt 60) { 'FAIL' } elseif ($dataFreeGb -lt 110) { 'WARN' } else { 'PASS' }) `
+        $(if ($null -eq $dataFreeGb) { "${dataDriveName}: not found" } else { "$dataFreeGb GB free on ${dataDriveName}:" }) `
+        '110 GB recommended' `
+        'Free space on the data drive, or pick another one with -DataDrive.' `
+        'The domain controller VM, SQL Server data, log and backup files, and both apps live here.'
+}
 
 $hyperV = Get-FeatureState 'Microsoft-Hyper-V-All' 'Hyper-V'
 Add-Check 'Hyper-V' (Get-FeatureStatus $hyperV) $hyperV 'Enabled' `
